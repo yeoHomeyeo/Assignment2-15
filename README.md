@@ -1,5 +1,5 @@
-# Assignment2-15
-Secret Management
+## Assignment2-15
+## Secret Management
 
 ### What is needed to authorize your EC2 to retrieve secrets from the AWS Secret Manager?
 - To authorize an EC2 instance to retrieve secrets from AWS Secrets Manager, create an IAM role with the necessary permissions and attach it to the EC2 instance
@@ -14,6 +14,33 @@ Secret Management
 
   - Retrieve the Secret:
     - Application running on the EC2 instance can now retrieve the secret using the AWS SDK or CLI.
+```
+import boto3
+import json
+
+def get_secret():
+    secret_name = "prod/cart-service/credentials"
+    region_name = "us-east-1"
+
+    #Create a Secrets Manager client
+    client = boto3.client('secretsmanager', region_name=region_name)
+
+    try:
+        get_secret_value_response = client.get_secret_value(SecretId=secret_name)
+    except Exception as e:
+        raise e
+    else:
+        if 'SecretString' in get_secret_value_response:
+            secret = get_secret_value_response['SecretString']
+            return json.loads(secret)
+        else:
+            decoded_binary_secret = base64.b64decode(get_secret_value_response['SecretBinary'])
+            return decoded_binary_secret
+
+#Example usage
+secret = get_secret()
+print(secret)
+```
 
 ### Derive the IAM policy (i.e. JSON)?
 
@@ -39,3 +66,6 @@ Secret Management
 arn:aws:secretsmanager:us-east-1:123456789012:secret:prod/cart-service/credentials
 ```
 
+- Region: The AWS region where the secret is stored (us-east-1)
+- Account-id: Your AWS account ID (123456789012)
+- Secret-name: The name of the secret ( prod/cart-service/credentials)
